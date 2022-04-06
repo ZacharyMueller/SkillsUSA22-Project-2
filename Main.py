@@ -31,16 +31,23 @@ class GradeBookDisplay():
         self.gradeBook = gradebook
         self.done = False
 
+        
+
+
         self.root = Tk()
         self.root.title("Contestant 1785 Project 2")
 
         self.frame = ttk.Frame(self.root).grid(column=0, row=0, sticky=(N, E, S, W))
 
         self.title = ttk.Label(self.frame, text="Grade Book Manager").grid(column=1, row=1)
+        
+        self.errorMessageVar = StringVar()
+        self.errorMessageVar.set("")
 
         self.displayCourseForm()
 
-        
+        for child in self.root.winfo_children():
+            child.grid_configure(padx=5, pady=5)
 
     def displayCourseForm(self):
         
@@ -52,28 +59,31 @@ class GradeBookDisplay():
         self.calculateButton.grid(row=7, column=2)
 
     def newGradePortFolio(self):
-        print('calculating new grade portfolio')
-        
+
         for course in self.coursesDisplayed:
             if course.gradeVar.get() != "":
-                grade = int(course.gradeVar.get())
-            
+                try:
+                    grade = int(course.gradeVar.get())
+                except ValueError:
+                    self.errorMessageVar.set("Error: Enter a number")
                 indexValue = self.coursesDisplayed.index(course)
                 self.gradeBook.courseinstances[indexValue].allgrades.append(grade)
             else:
-                raise Exception 
+                self.errorMessageVar.set("Error: Missing Values") 
                 break
         self.displaySummary()
         
     def displaySummary(self):
         self.courseSummaryInstances = []
-        self.summaryTitle = ttk.Label(self.frame, text="Summary").grid(row=8, column=1)
+        self.summaryTitle = ttk.Label(self.frame, text="Summary").grid(row=9, column=1)
+        self.errorMessage = ttk.Label(self.frame, textvariable=self.errorMessageVar).grid(row=10, column=1)
+
         self.done = False
         if self.done == False:
             for course in self.coursesDisplayed:
-                print('ddddddd')
                 courseSummary = CourseSummaryDisplay(course, self.coursesDisplayed, self.gradeBook, self.frame)
             self.done = True
+            CourseSummaryDisplay.startrow = 10
         
 
 
@@ -91,11 +101,12 @@ class CourseDisplay():
         self.label = ttk.Label(self.frame, text=self.name).grid(row=CourseDisplay.rowNumber, column=1 )
         self.gradeVar = StringVar()
         self.gradeVar.set("")
+
         self.gradeEntry = ttk.Entry(self.frame, width=4, textvariable=self.gradeVar).grid(row=CourseDisplay.rowNumber, column=2)
         CourseDisplay.rowNumber += 1
 
 class CourseSummaryDisplay():
-    startrow = 9
+    startrow = 10
     def __init__(self, course, displayedCourses, gradeBook, frame):
         self.frame = frame
         self.indexValue = displayedCourses.index(course)
