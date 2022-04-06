@@ -64,12 +64,17 @@ class GradeBookDisplay():
             if course.gradeVar.get() != "":
                 try:
                     grade = int(course.gradeVar.get())
+                    if grade < 0:
+                        self.errorMessageVar.set("Error: Enter a positive num")
+                        return
                 except ValueError:
                     self.errorMessageVar.set("Error: Enter a number")
+                    return
                 indexValue = self.coursesDisplayed.index(course)
                 self.gradeBook.courseinstances[indexValue].allgrades.append(grade)
             else:
                 self.errorMessageVar.set("Error: Missing Values") 
+                return
                 break
         self.displaySummary()
         
