@@ -1,3 +1,4 @@
+import statistics
 from tkinter import *
 from tkinter import ttk
 
@@ -23,9 +24,12 @@ class GradeBook():
 class GradeBookDisplay():
     
     def __init__(self, gradebook):
+        #I think that this one gets garbage collected at some point?
         self.coursesToDisplay = gradebook.courseinstances[:]
+        #---------------------------
         self.coursesDisplayed = []
-
+        self.gradeBook = gradebook
+        self.done = False
 
         self.root = Tk()
         self.root.title("Contestant 1785 Project 2")
@@ -41,18 +45,89 @@ class GradeBookDisplay():
     def displayCourseForm(self):
         
         for course in self.coursesToDisplay:
-            courseDisplayed = CourseDisplay(course)
+            courseDisplayed = CourseDisplay(course, self.frame)
             self.coursesDisplayed.append(courseDisplayed)
 
-        print(self.coursesToDisplay)
+        self.calculateButton = ttk.Button(self.frame, text="Calculate", command=self.newGradePortFolio)
+        self.calculateButton.grid(row=7, column=2)
+
+    def newGradePortFolio(self):
+        print('calculating new grade portfolio')
+        
+        for course in self.coursesDisplayed:
+            if course.gradeVar.get() != "":
+                grade = int(course.gradeVar.get())
+            
+                indexValue = self.coursesDisplayed.index(course)
+                self.gradeBook.courseinstances[indexValue].allgrades.append(grade)
+            else:
+                raise Exception 
+                break
+        self.displaySummary()
+        
+    def displaySummary(self):
+        self.courseSummaryInstances = []
+        self.summaryTitle = ttk.Label(self.frame, text="Summary").grid(row=8, column=1)
+        self.done = False
+        if self.done == False:
+            for course in self.coursesDisplayed:
+                print('ddddddd')
+                courseSummary = CourseSummaryDisplay(course, self.coursesDisplayed, self.gradeBook, self.frame)
+            self.done = True
+        
+
+
+
         
     def start(self):
         self.root.mainloop()
 
+
 class CourseDisplay():
-    
-    def __init__(self, course):
-        pass
+    rowNumber = 2
+    def __init__(self, course, frame):
+        self.name = course.name
+        self.frame = frame
+        self.label = ttk.Label(self.frame, text=self.name).grid(row=CourseDisplay.rowNumber, column=1 )
+        self.gradeVar = StringVar()
+        self.gradeVar.set("")
+        self.gradeEntry = ttk.Entry(self.frame, width=4, textvariable=self.gradeVar).grid(row=CourseDisplay.rowNumber, column=2)
+        CourseDisplay.rowNumber += 1
+
+class CourseSummaryDisplay():
+    startrow = 9
+    def __init__(self, course, displayedCourses, gradeBook, frame):
+        self.frame = frame
+        self.indexValue = displayedCourses.index(course)
+        self.course = gradeBook.courseinstances[self.indexValue]
+        self.average = 0
+        self.min = 0
+        self.max = 0
+        if self.course.allgrades != []:
+            self.average = statistics.mean(self.course.allgrades)
+            self.min = sorted(self.course.allgrades)[0]
+            self.max = sorted(self.course.allgrades)[-1]
+
+        self.nameLabel = ttk.Label(self.frame, text=self.course.name).grid(row=CourseSummaryDisplay.startrow+1, column=1)
+        CourseSummaryDisplay.startrow += 1
+        self.averageLabel = ttk.Label(self.frame, text="Average:").grid(row=CourseSummaryDisplay.startrow+1, column=1, sticky=E)
+        CourseSummaryDisplay.startrow += 1
+        self.averageNumber = ttk.Label(self.frame, text=str(self.average)).grid(row=CourseSummaryDisplay.startrow, column=2)
+        CourseSummaryDisplay.startrow +=1
+        self.minLabel = ttk.Label(self.frame, text="Min:").grid(row=CourseSummaryDisplay.startrow+1, column=1, sticky=E)
+        CourseSummaryDisplay.startrow += 1
+        self.minNumber = ttk.Label(self.frame, text=str(self.min)).grid(row=CourseSummaryDisplay.startrow, column=2)
+        CourseSummaryDisplay.startrow +=1
+        self.maxLabel = ttk.Label(self.frame, text="Max:").grid(row=CourseSummaryDisplay.startrow+1, column=1, sticky=E)
+        CourseSummaryDisplay.startrow += 1
+        self.maxNumber = ttk.Label(self.frame, text=str(self.max)).grid(row=CourseSummaryDisplay.startrow, column=2,)
+        CourseSummaryDisplay.startrow +=1
+
+
+
+        
+        
+        
 
         
 courses = ['Programming', 'Art', 'Science', 'Math', 'History']
